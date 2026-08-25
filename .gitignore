@@ -6,3 +6,4 @@ DerivedData/
 *.xcuserstate
 Demo.xcodeproj/project.xcworkspace/xcuserdata/
 Demo.xcodeproj/xcuserdata/
+Demo.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved

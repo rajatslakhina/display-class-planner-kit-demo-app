@@ -84,8 +84,10 @@ fetch), select the **Demo** scheme, pick any iOS 17+ Simulator, and **⌘R**.
 The scheme is committed as shared (`Demo.xcodeproj/xcshareddata/xcschemes/Demo.xcscheme`), so it is
 selectable on a fresh clone with no setup.
 
-Requirements: Xcode 15+, iOS 17+ Simulator. No signing needed to run on Simulator; no API keys, no
-fixtures, no network at runtime.
+**Requirements: Xcode 16 or newer** — the app is built at `SWIFT_VERSION = 6.0` and the pinned
+package declares `swift-tools-version: 6.0`, neither of which Xcode 15 (Swift 5.9/5.10) can handle.
+iOS 17+ Simulator. No signing needed to run on Simulator; no API keys, no fixtures, no network at
+runtime. (Xcode will write `Package.resolved` on first open; it is gitignored — see below.)
 
 ---
 
@@ -94,7 +96,7 @@ fixtures, no network at runtime.
 ```
 XCRemoteSwiftPackageReference "display-class-planner-kit"
     repositoryURL = https://github.com/rajatslakhina/display-class-planner-kit.git
-    requirement   = { kind = exactVersion; version = 1.0.0; }
+    requirement   = { kind = exactVersion; version = 2.0.0; }
 ```
 
 Two deliberate choices worth defending:
@@ -123,7 +125,7 @@ the numbers belong to the app.
 
 **What was actually checked:**
 
-- ✅ The library builds and its 90 tests pass with `-warnings-as-errors`, on a clean tree.
+- ✅ The library builds and its **98 tests** pass with `-warnings-as-errors`, on a clean tree.
   ([library CI](https://github.com/rajatslakhina/display-class-planner-kit/actions))
 - ✅ `Demo.xcodeproj` was structurally validated — balanced braces and parens, every referenced
   object id defined, all ids 24-hex, `objectVersion = 60`.
@@ -132,13 +134,20 @@ the numbers belong to the app.
   [Actions tab](https://github.com/rajatslakhina/display-class-planner-kit-demo-app/actions) — the
   `Resolve package dependencies` step proves the pin resolves, `Show resolved version` prints the
   exact revision, and `Build` proves the app compiles.
-- ✅ An independent Opus reviewer graded both repos against a strict checklist and every finding it
-  returned was fixed.
+- ✅ Two rounds of independent Opus review against a strict checklist. Round 1 returned 14 findings;
+  all were fixed. Round 2 returned 14 more — including a **real bug in this app's view model**
+  (a held contraction was planned against the pre-contraction viewport, so the transition panel
+  reported the wrong priorities) — and all were fixed. The round-2 fixes were not themselves
+  re-reviewed by a third pass.
 
 **What was not:**
 
 - ❌ **The app was never launched on a Simulator.** No screenshot exists. The reason is in
   [Screenshots](#screenshots) above.
+- ❌ **The view model has no unit tests.** The library's 98 tests cover `DisplayClassPlanner`, the
+  core planning module. `DisplayClassPlannerUI` — the view model this app mounts — is compile-checked
+  only. That is exactly where round 2 found its bug, and saying so is more useful than a coverage
+  number that would have hidden it.
 - ❌ No performance measurement is claimed anywhere. The numbers in the library README are
   hand-computed budget arithmetic verified against the tests, not benchmarks.
 
